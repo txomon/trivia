@@ -48,22 +48,23 @@ class Game:
                 self.is_getting_out_of_penalty_box = True
 
                 print '%s is getting out of the penalty box' % self.players[self.current_player]
-                self.places[self.current_player] = self.places[self.current_player] + roll
-                if self.places[self.current_player] > 11:
-                    self.places[self.current_player] = self.places[self.current_player] - 12
+                self.move_player(roll)
 
             else:
                 print '%s is not getting out of the penalty box' % self.players[self.current_player]
                 self.is_getting_out_of_penalty_box = False
                 return
         else:
-            self.places[self.current_player] = self.places[self.current_player] + roll
-            if self.places[self.current_player] > 11:
-                self.places[self.current_player] = self.places[self.current_player] - 12
+            self.move_player(roll)
 
         print "%s's new location is %d" % (self.players[self.current_player], self.places[self.current_player])
         print 'The category is %s' % self._current_category
         self._ask_question()
+
+    def move_player(self, roll):
+        self.places[self.current_player] = self.places[self.current_player] + roll
+        if self.places[self.current_player] > 11:
+            self.places[self.current_player] = self.places[self.current_player] - 12
 
     def _ask_question(self):
         if self._current_category == 'Pop': print self.pop_questions.pop(0)
@@ -89,10 +90,7 @@ class Game:
             if self.is_getting_out_of_penalty_box:
                 print 'Answer was correct!!!!'
                 self.purses[self.current_player] += 1
-                print self.players[self.current_player] + \
-                      ' now has ' + \
-                      str(self.purses[self.current_player]) + \
-                      ' Gold Coins.'
+                print '%s now has %d Gold Coins.' % (self.players[self.current_player], self.purses[self.current_player])
 
                 winner = self._did_player_win()
                 self.current_player += 1
