@@ -3,9 +3,7 @@
 class Game:
     def __init__(self):
         self.players = []
-        self.places = [0] * 6
-        self.purses = [0] * 6
-        self.in_penalty_box = [0] * 6
+        self.player_data = {}
 
         self.pop_questions = []
         self.science_questions = []
@@ -26,9 +24,11 @@ class Game:
 
     def add(self, player_name):
         self.players.append(player_name)
-        self.places[self.how_many_players] = 0
-        self.purses[self.how_many_players] = 0
-        self.in_penalty_box[self.how_many_players] = False
+        self.player_data[self.players.index(player_name)] = {
+            'place': 0,
+            'gold': 0,
+            'in_penalty_box': False,
+        }
 
         print '%s was added' % player_name
         print 'They are player number %s' % len(self.players)
@@ -40,31 +40,35 @@ class Game:
         return len(self.players)
 
     def roll(self, roll):
-        print '%s is the current player' % self.players[self.current_player]
+        player = self.players[self.current_player]
+        print '%s is the current player' % player
         print 'They have rolled a %s' % roll
 
-        if self.in_penalty_box[self.current_player]:
+        if self.player_data[self.current_player]['in_penalty_box']:
             if roll % 2 != 0:
                 self.is_getting_out_of_penalty_box = True
 
-                print '%s is getting out of the penalty box' % self.players[self.current_player]
+                print '%s is getting out of the penalty box' % player
                 self.move_player(roll)
 
             else:
-                print '%s is not getting out of the penalty box' % self.players[self.current_player]
+                print '%s is not getting out of the penalty box' % player
                 self.is_getting_out_of_penalty_box = False
                 return
         else:
             self.move_player(roll)
 
-        print "%s's new location is %d" % (self.players[self.current_player], self.places[self.current_player])
+        print "%s's new location is %d" % (
+            player,
+            self.player_data[self.current_player]['place']
+        )
         print 'The category is %s' % self._current_category
         self._ask_question()
 
     def move_player(self, roll):
-        self.places[self.current_player] = self.places[self.current_player] + roll
-        if self.places[self.current_player] > 11:
-            self.places[self.current_player] = self.places[self.current_player] - 12
+        self.player_data[self.current_player]['place'] = self.player_data[self.current_player]['place'] + roll
+        if self.player_data[self.current_player]['place'] > 11:
+            self.player_data[self.current_player]['place'] = self.player_data[self.current_player]['place'] - 12
 
     def _ask_question(self):
         if self._current_category == 'Pop': print self.pop_questions.pop(0)
@@ -74,23 +78,24 @@ class Game:
 
     @property
     def _current_category(self):
-        if self.places[self.current_player] == 0: return 'Pop'
-        if self.places[self.current_player] == 1: return 'Science'
-        if self.places[self.current_player] == 2: return 'Sports'
-        if self.places[self.current_player] == 4: return 'Pop'
-        if self.places[self.current_player] == 5: return 'Science'
-        if self.places[self.current_player] == 6: return 'Sports'
-        if self.places[self.current_player] == 8: return 'Pop'
-        if self.places[self.current_player] == 9: return 'Science'
-        if self.places[self.current_player] == 10: return 'Sports'
+        if self.player_data[self.current_player]['place'] == 0: return 'Pop'
+        if self.player_data[self.current_player]['place'] == 1: return 'Science'
+        if self.player_data[self.current_player]['place'] == 2: return 'Sports'
+        if self.player_data[self.current_player]['place'] == 4: return 'Pop'
+        if self.player_data[self.current_player]['place'] == 5: return 'Science'
+        if self.player_data[self.current_player]['place'] == 6: return 'Sports'
+        if self.player_data[self.current_player]['place'] == 8: return 'Pop'
+        if self.player_data[self.current_player]['place'] == 9: return 'Science'
+        if self.player_data[self.current_player]['place'] == 10: return 'Sports'
         return 'Rock'
 
     def was_correctly_answered(self):
-        if self.in_penalty_box[self.current_player]:
+        if self.player_data[self.current_player]['in_penalty_box']:
             if self.is_getting_out_of_penalty_box:
                 print 'Answer was correct!!!!'
-                self.purses[self.current_player] += 1
-                print '%s now has %d Gold Coins.' % (self.players[self.current_player], self.purses[self.current_player])
+                self.player_data[self.current_player]['gold'] += 1
+                print '%s now has %d Gold Coins.' % (
+                    self.players[self.current_player], self.player_data[self.current_player]['gold'])
 
                 winner = self._did_player_win()
                 self.current_player += 1
@@ -103,8 +108,8 @@ class Game:
                 return True
         else:
             print 'Answer was corrent!!!!'
-            self.purses[self.current_player] += 1
-            print '%s now has %d Gold Coins.' % (self.players[self.current_player], self.purses[self.current_player])
+            self.player_data[self.current_player]['gold'] += 1
+            print '%s now has %d Gold Coins.' % (self.players[self.current_player], self.player_data[self.current_player]['gold'])
 
             winner = self._did_player_win()
             self.current_player += 1
@@ -115,14 +120,14 @@ class Game:
     def wrong_answer(self):
         print 'Question was incorrectly answered'
         print self.players[self.current_player] + ' was sent to the penalty box'
-        self.in_penalty_box[self.current_player] = True
+        self.player_data[self.current_player]['in_penalty_box'] = True
 
         self.current_player += 1
         if self.current_player == len(self.players): self.current_player = 0
         return True
 
     def _did_player_win(self):
-        return not (self.purses[self.current_player] == 6)
+        return not (self.player_data[self.current_player]['gold'] == 6)
 
 
 from random import randrange
